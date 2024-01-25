@@ -31,7 +31,9 @@
                 <v-icon>mdi-account</v-icon>
               </v-btn>
 
-              <v-btn icon color="secondary" rounded>
+              <v-btn icon color="secondary"
+                     @click="this.$router.push({name: 'Quotation'})"
+                     rounded>
                 <v-icon>mdi-cart</v-icon>
               </v-btn>
             </div>

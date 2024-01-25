@@ -3,8 +3,7 @@ import productServiceApi from "@/store/ProductServiceApi";
 
 export const useProductStore = defineStore("ProductStore", {
   state: () => {
-    return {
-    }
+    return {}
   },
   actions: {
     async findProductsPaginate(data, paginacao) {
@@ -20,6 +19,10 @@ export const useProductStore = defineStore("ProductStore", {
 
     async findProductById(id) {
       return await productServiceApi.get(`/${id}`);
+    },
+
+    async findProductsByQuotationId(id) {
+      return await productServiceApi.get(`/quotation/${id}`);
     }
   }
 });

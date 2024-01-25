@@ -17,13 +17,13 @@
             >
             </v-text-field>
             <v-text-field
-              :append-icon="passwordIcon"
               v-model="form.password"
+              :append-icon="passwordIcon"
               :readonly="loading"
               :rules="[required]"
+              :type="passwordInputType"
               class="mb-2"
               label="Senha"
-              :type="passwordInputType"
               placeholder="Digite sua senha:"
               variant="outlined"
               @click:append="togglePassword"
@@ -45,8 +45,8 @@
               color="secondary"
               size="large"
               type="submit"
-              @click="this.$router.push({name: 'Register'})"
-              variant="elevated">
+              variant="elevated"
+              @click="this.$router.push({name: 'Register'})">
               Cadastre-se
             </v-btn>
           </v-form>
@@ -84,8 +84,13 @@ export default {
         if (Object.values(this.form).every(v => v !== '')) {
           this.loading = true;
           const res = await this.entrar(this.form);
-          await localStorage.setItem('jwt-token', JSON.stringify(res.data));
-          this.$router.push({name: 'Home'})
+          const token = res.data.token;
+          await localStorage.setItem('jwt-token', token);
+          if (this.$route.query && this.$route.query.isQuotation) {
+            this.$router.push({name: 'Quotation'});
+          } else {
+            this.$router.push({name: 'Home'})
+          }
         }
       } catch (e) {
         this.setAlert('Usuário ou senha incorretos.')
