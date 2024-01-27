@@ -36,6 +36,8 @@
                     </v-card-actions>
                   </v-col>
                 </v-row>
+                <v-row>
+                </v-row>
               </v-card-text>
             </v-card>
           </div>
@@ -120,7 +122,7 @@ export default {
 
     async findProducts(options = {
       page: 1,
-      rowsPerPage: 5,
+      rowsPerPage: 100,
       sortDirection: 'ASC',
       sortField: 'price'
     }) {

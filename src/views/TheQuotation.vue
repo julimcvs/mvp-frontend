@@ -47,35 +47,8 @@
         </v-card>
         <v-card v-else class="mx-auto px-6 py-8">
           <h5 class="text-left">Você ainda não adicionou nenhum item no carrinho!
-            <v-icon>mdi-cart</v-icon>
+            <v-icon color="secondary">mdi-cart</v-icon>
           </h5>
-          <v-card>
-            <v-card-text>
-              <v-row>
-                <v-col v-for="product in products"
-                       :key="product.id"
-                       cols="12"
-                >
-                  <v-card
-                    class="text-left"
-                    style="width: 100px"
-                    variant="flat">
-                    <div class="justify-start">
-                      <v-img
-                        :src="`data:image/png;base64,${product.image}`"
-                        height="100"
-                        width="100">
-                      </v-img>
-                    </div>
-                    <div>
-                      <h6>{{ product.description }}</h6>
-                      <p>{{ product.price }}</p>
-                    </div>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
         </v-card>
       </v-sheet>
     </v-responsive>
@@ -132,8 +105,10 @@ export default {
 
   created() {
     this.quotationId = sessionStorage.getItem('quotationId');
-    this.findById();
-    this.findProductsByQuotation();
+    if (this.quotationId) {
+      this.findById();
+      this.findProductsByQuotation();
+    }
   }
 }
 </script>
