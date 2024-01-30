@@ -41,7 +41,10 @@
               </div>
             </v-card-text>
             <v-card-actions class="justify-end">
-              <v-btn color="secondary" variant="outlined" @click="checkout">Fechar pedido</v-btn>
+              <v-btn color="secondary"
+                     :loading="checkoutLoading"
+                     variant="outlined"
+                     @click="checkout">Fechar pedido</v-btn>
             </v-card-actions>
           </v-card>
         </v-card>
@@ -65,6 +68,7 @@ import {usePurchaseStore} from "@/store/PurchaseStore";
 export default {
   data() {
     return {
+      checkoutLoading: false,
       products: [],
       quotationId: null,
       quotation: null
@@ -78,16 +82,24 @@ export default {
     ...mapActions(usePurchaseStore, ['checkoutQuotation']),
 
     async checkout() {
-      console.log(localStorage.getItem('jwt-token'));
-      if (localStorage.getItem('jwt-token')) {
-        await this.checkoutQuotation({quotationId: this.quotationId});
-        sessionStorage.removeItem('quotationId');
-        this.$router.push({name: 'Home'});
-        this.setAlert('Pedido concluído com sucesso!')
-      } else {
-        this.setAlert('Para concluir um pedido, você deve fazer login.');
-        this.$router.push('/login?isQuotation=true');
+      this.checkoutLoading = true;
+      try {
+        if (localStorage.getItem('jwt-token')) {
+          await this.checkoutQuotation({quotationId: this.quotationId});
+          sessionStorage.removeItem('quotationId');
+          this.$router.push({name: 'Home'});
+          this.setAlert('Pedido concluído com sucesso!')
+        } else {
+          this.setAlert('Para concluir um pedido, você deve fazer login.');
+          this.$router.push('/login?isQuotation=true');
+        }
+      } catch (e) {
+        console.log(e);
+        this.setAlert('Erro ao concluir pedido.');
+      } finally {
+        this.checkoutLoading = false;
       }
+
     },
 
     async findById() {

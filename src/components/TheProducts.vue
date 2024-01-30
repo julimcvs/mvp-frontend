@@ -75,6 +75,7 @@
                 md="9">
                 <v-btn append-icon="mdi-cart"
                        color="secondary"
+                       :loading="itemAddLoading"
                        variant="outlined"
                        @click="addItemToChart">Adicionar ao carrinho
                 </v-btn>
@@ -92,6 +93,7 @@
 import {mapActions} from "pinia";
 import {useProductStore} from "@/store/ProductStore";
 import {useQuotationStore} from "@/store/QuotationStore";
+import {useDialogStore} from "@/store/DialogStore";
 
 export default {
   computed: {},
@@ -101,6 +103,7 @@ export default {
       products: [],
       selectedProduct: {},
       dialogProduct: false,
+      itemAddLoading: false,
       quotationForm: {
         product: {
           quantity: 1,
@@ -113,11 +116,22 @@ export default {
   methods: {
     ...mapActions(useProductStore, ['findProductsPaginate', 'findProductById']),
     ...mapActions(useQuotationStore, ['addItemQuotation']),
+    ...mapActions(useDialogStore, ['setAlert']),
 
     async addItemToChart() {
-      const res = await this.addItemQuotation(this.quotationForm);
-      sessionStorage.setItem('quotationId', res.data.id);
-      this.dialogProduct = false;
+      this.itemAddLoading = true;
+      try {
+        const res = await this.addItemQuotation(this.quotationForm);
+        sessionStorage.setItem('quotationId', res.data.id);
+        this.setAlert('Produto adicionado ao carrinho!')
+      } catch (e) {
+        console.log(e);
+        this.setAlert('Erro ao adicionar item ao carrinho.');
+      } finally {
+        this.itemAddLoading = false;
+        this.dialogProduct = false;
+      }
+
     },
 
     async findProducts(options = {
