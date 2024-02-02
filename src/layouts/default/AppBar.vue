@@ -1,39 +1,52 @@
 <template>
-  <v-app-bar flat height="100" app>
+  <v-app-bar app flat height="100">
     <v-app-bar-title app>
       <v-row class="toolbar">
         <v-row class="ma-5 d-flex">
           <v-col cols="12" md="4">
             <div>
-                <v-img
-                  @click="$router.push({name: 'Home'})"
-                  height="50px"
-                  src="@/assets/icon-ecommerce.png" />
+              <v-img
+                height="50px"
+                src="@/assets/icon-ecommerce.png"
+                @click="$router.push({name: 'Home'})"/>
             </div>
           </v-col>
           <v-col cols="12" md="4">
-            <v-text-field
-              type="text"
-              placeholder="O que você procura?"
+            <v-autocomplete
+              :items="products"
               append-inner-icon="mdi-magnify"
               hide-details
+              item-title="description"
+              item-value="description"
+              placeholder="O que você procura?"
+              type="text"
               variant="outlined"
-              @click:append="searchProduct"
-            ></v-text-field>
+              @update:search="findProducts"
+            >
+              <template v-slot:item="{ props, item }">
+                <v-list-item
+                  :prepend-avatar="`data:image/png;base64,${item.raw.image}`"
+                  :subtitle="item.raw.price"
+                  :title="item.raw.description"
+                  v-bind="props"
+                >
+                </v-list-item>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="12" md="4">
             <div class="d-flex justify-center align-center">
               <v-btn
-                @click="router.push($router.push('/login'))"
-                icon
                 color="primary"
-                rounded>
+                icon
+                rounded
+                @click="router.push($router.push('/login'))">
                 <v-icon>mdi-account</v-icon>
               </v-btn>
 
-              <v-btn icon color="secondary"
-                     @click="this.$router.push({name: 'Quotation'})"
-                     rounded>
+              <v-btn color="secondary" icon
+                     rounded
+                     @click="this.$router.push({name: 'Quotation'})">
                 <v-icon>mdi-cart</v-icon>
               </v-btn>
             </div>
@@ -57,8 +70,8 @@
               :key="tab"
             >
               <v-menu
-                open-on-hover
                 class="tab-title tab"
+                open-on-hover
               >
                 <v-list>
                   <v-list-item
@@ -89,9 +102,31 @@
 
 <script>
 import router from "@/router";
+import {mapActions} from "pinia";
+import {useProductStore} from "@/store/ProductStore";
 
 export default {
   methods: {
+    ...mapActions(useProductStore, ['findProductsPaginate', 'findProductById']),
+
+    async findProducts(options = {
+      page: this.page,
+      rowsPerPage: 5,
+      sortDirection: 'ASC',
+      sortField: 'price'
+    }) {
+      this.productsLoading = true;
+      try {
+        const res = await this.findProductsPaginate({}, options);
+        this.products = res.data.content;
+      } catch (e) {
+        console.log(e);
+        this.setAlert('Não foi possível buscar produtos.');
+      } finally {
+        this.productsLoading = false;
+      }
+    },
+
     router() {
       return router
     }
@@ -99,6 +134,8 @@ export default {
   data() {
     return {
       tab: null,
+      page: 1,
+      products: [],
       tabs: ['Departamentos', 'Tendências', 'Ofertas', 'Projetos', 'Dicas', 'Serviços']
     }
   }

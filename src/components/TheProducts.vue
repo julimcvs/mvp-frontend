@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height">
     <v-responsive class="align-start text-center fill-height">
-      <div class="d-flex align-start justify-space-between">
+      <div class="d-flex align-start justify-center">
         <v-card
           class="pa-5"
           variant="flat">
@@ -9,11 +9,14 @@
             <v-card>
               <v-card-text>
                 <v-row>
-                  <v-col v-for="product in products"
-                         :key="product.id"
-                         cols="12"
-                         md="3"
-                         sm="6"
+                  <TheLoading v-if="productsLoading"></TheLoading>
+                  <v-col
+                    v-for="product in products"
+                    v-else
+                    :key="product.id"
+                    cols="12"
+                    md="3"
+                    sm="6"
                   >
                     <v-card
                       class="text-left pa-2"
@@ -38,6 +41,11 @@
                 </v-row>
                 <v-row>
                 </v-row>
+                <v-pagination
+                  v-model="page"
+                  :length="totalAmount"
+                  rounded
+                  @update:model-value="findProducts()"></v-pagination>
               </v-card-text>
             </v-card>
           </div>
@@ -73,9 +81,9 @@
               <v-col
                 cols="12"
                 md="9">
-                <v-btn append-icon="mdi-cart"
+                <v-btn :loading="itemAddLoading"
+                       append-icon="mdi-cart"
                        color="secondary"
-                       :loading="itemAddLoading"
                        variant="outlined"
                        @click="addItemToChart">Adicionar ao carrinho
                 </v-btn>
@@ -94,16 +102,21 @@ import {mapActions} from "pinia";
 import {useProductStore} from "@/store/ProductStore";
 import {useQuotationStore} from "@/store/QuotationStore";
 import {useDialogStore} from "@/store/DialogStore";
+import TheLoading from "@/components/TheLoading.vue";
 
 export default {
+  components: {TheLoading},
   computed: {},
 
   data() {
     return {
       products: [],
+      totalAmount: 1,
+      page: 1,
       selectedProduct: {},
       dialogProduct: false,
       itemAddLoading: false,
+      productsLoading: false,
       quotationForm: {
         product: {
           quantity: 1,
@@ -135,13 +148,22 @@ export default {
     },
 
     async findProducts(options = {
-      page: 1,
+      page: this.page,
       rowsPerPage: 100,
       sortDirection: 'ASC',
       sortField: 'price'
     }) {
-      const res = await this.findProductsPaginate({}, options);
-      this.products = res.data.content;
+      this.productsLoading = true;
+      try {
+        const res = await this.findProductsPaginate({}, options);
+        this.totalAmount = Math.ceil(res.data.totalElements / options.rowsPerPage)
+        this.products = res.data.content;
+      } catch (e) {
+        console.log(e);
+        this.setAlert('Não foi possível buscar produtos.');
+      } finally {
+        this.productsLoading = false;
+      }
     },
 
     async openProductDialog(id) {
